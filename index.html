@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>TTC Bühl Voting</title>
+</head>
+<body>
+    <template id="template-voting">
+        <div class="col-xs-12 col-sm-6">
+            <div class="card mb-3">
+                <div class="card-header heading"></div>
+                <div class="card-body">
+                    <h1 class="display-3 votes"></h1>
+                    <a href="#" class="btn btn-danger vote-link" target="_blank">Vote</a>
+                </div>
+            </div>
+        </div>
+    </template>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">TTC Bühl Votings</h1>
+        </div>
+        <div class="row" id="list">
+
+        </div>
+    </div>
+    <script>
+        let votings = [
+            {
+                title: "LOTTO BW Vereinsaktion 2019",
+                link: "https://v2.lotto-bw-webspace.de/vereinsaktion2019",
+                getVotes: () => fetch("https://cors.io/?https://v2.lotto-bw-webspace.de/vereinsaktion2019/entry?id=126").then(r => r.json()).then(j => j.votes_count)
+            }
+        ]
+
+        const list = document.querySelector("#list")
+        const templ = document.querySelector("#template-voting")
+        for (let voting of votings) {
+            const clone = document.importNode(templ.content, true)
+            clone.querySelector(".heading").textContent = voting.title
+            clone.querySelector(".vote-link").setAttribute("href", voting.link)
+            voting.getVotes().then(votes => {
+                clone.querySelector(".votes").textContent = votes
+                list.appendChild(clone)
+            })
+        }
+    </script>
+</body>
+</html>
