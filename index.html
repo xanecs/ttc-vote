@@ -13,8 +13,17 @@
             <div class="card mb-3">
                 <div class="card-header heading"></div>
                 <div class="card-body">
-                    <h1 class="display-3 votes"></h1>
-                    <a href="#" class="btn btn-danger vote-link" target="_blank">Vote</a>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h1 class="display-3 votes"><div class="spinner-grow"></div></h1>
+                            <small>Votes</small>
+                        </div>
+                        <div class="col-sm-6">
+                            <h1 class="display-3 rank"><div class="spinner-grow"></div></h1>
+                            <small>Rank</small>
+                        </div>
+                    </div>                    
+                    <a href="#" class="btn btn-danger vote-link mt-3" target="_blank">Vote</a>
                 </div>
             </div>
         </div>
@@ -32,19 +41,41 @@
             {
                 title: "LOTTO BW Vereinsaktion 2019",
                 link: "https://v2.lotto-bw-webspace.de/vereinsaktion2019",
-                getVotes: () => fetch("https://cors.io/?https://v2.lotto-bw-webspace.de/vereinsaktion2019/entry?id=126").then(r => r.json()).then(j => j.votes_count)
+                getVotes: () => fetch("https://cors.io/?https://v2.lotto-bw-webspace.de/vereinsaktion2019/entry?id=126").then(r => r.json()).then(j => j.votes_count),
+                getRank: () => {
+                    function checkPage(num) {
+                        return fetch("https://cors.io/?https://v2.lotto-bw-webspace.de/vereinsaktion2019/entries?page=" + num)
+                        .then(r => r.json())
+                        .then(j => {
+                            for (let i = 0; i < j.data.length; i++) {
+                                let e = j.data[i]
+                                if (e.id == 126) {
+                                    console.log(j.from + i)
+                                    return Promise.resolve(j.from + i)
+                                }
+                            }
+                            return checkPage(num + 1)
+                        })
+                    }
+                    return checkPage(1)
+                }
             }
         ]
 
         const list = document.querySelector("#list")
         const templ = document.querySelector("#template-voting")
         for (let voting of votings) {
-            const clone = document.importNode(templ.content, true)
+            let clone = document.importNode(templ.content, true)
             clone.querySelector(".heading").textContent = voting.title
             clone.querySelector(".vote-link").setAttribute("href", voting.link)
+            list.appendChild(clone)
+            
+            clone = list.children[list.children.length - 1]
             voting.getVotes().then(votes => {
                 clone.querySelector(".votes").textContent = votes
-                list.appendChild(clone)
+                voting.getRank().then(rank => {
+                    clone.querySelector(".rank").textContent = rank
+                })
             })
         }
     </script>
